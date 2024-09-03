@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+    <div class="py-6 px-8">
+        <h1 class="my-6 text-3xl font-semibold">
+            {{project.name}}
+        </h1>
+        <a href="#" class="py-4 px-6 bg-emerald-600 hover:bg-emerald-700 text-white inline-block rounded me-2">Add todo list</a>
+        <a href="{% url 'project:edit' project.id %}" class="py-4 px-8 bg-amber-600 hover:bg-amber-700 text-white inline-block rounded me-2">Edit</a>
+        <a href="#" class="py-4 px-8 bg-red-600 hover:bg-red-700 text-white inline-block rounded">Delete</a>
+
+        <div class="mt-6 grid grid-cols-4 gap-4 ">
+            {% for todolist in todolists %}
+                <div class="py-6 px-6 bg-slate-200 rounded ">
+                    <a href="#">
+                        <h2 class="mb-4 text-xl">{{todolist.name}}</h2>
+
+                        <p class="text-sm text-slate-600 truncate">{{todolist.description}}
+                    </a>
+                </div>
+            {% endfor %}
+    </div>
+
+{% endblock %}
