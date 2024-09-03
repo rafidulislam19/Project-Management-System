@@ -43,7 +43,7 @@ def edit_project(request, pk):
             project.name = name
             project.description = description
             project.save()
-            
+
             return redirect('/projects/')
         else:
             print("Not Valid")
@@ -52,3 +52,9 @@ def edit_project(request, pk):
         'project': project
     })
 
+@login_required
+def delete(request, pk):
+    project = Project.objects.filter(created_by = request.user).get(pk=pk)
+    project.delete()
+
+    return redirect('/projects/')
