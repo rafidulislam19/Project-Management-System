@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+    <div class="py-6 px-8">
+        <h1 class="my-6 text-3xl font-semibold">
+            {{todolist.name}}
+        </h1>
+    {% if todolist.description %}
+        <p class="mb-6 truncate">{{todolist.description}}</p>
+    {% endif %}
+        <a href="{% url 'task:add' project.id todolist.id %}" class="py-4 px-6 bg-emerald-600 hover:bg-emerald-700 text-white inline-block rounded me-2">Add Task</a>
+        <a href="{% url 'todolist:edit' project.id todolist.id %}" class="py-4 px-8 bg-amber-600 hover:bg-amber-700 text-white inline-block rounded me-2">Edit</a>
+        <a href="{% url 'todolist:delete' project.id todolist.id %}" class="py-4 px-8 bg-red-600 hover:bg-red-700 text-white inline-block rounded">Delete</a>
+
+        <div class="mt-6 grid grid-cols-4 gap-4 ">
+            {% for task in todolist.tasks.all %}
+                <div class="py-6 px-6 bg-slate-200 rounded ">
+                    <a href="{% url 'task:detail' todolist.project.id todolist.id task.id %}">
+                        <h2 class="mb-4 text-xl">{{task.name}}</h2>
+
+                        <p class="text-sm text-slate-600 truncate">{{task.description}}
+                    </a>
+                </div>
+            {% endfor %}
+    </div>
+
+{% endblock %}
