@@ -7,7 +7,7 @@
             {{todolist.name}}
         </h1>
     {% if todolist.description %}
-        <p class="mb-6 truncate">{{todolist.description}}</p>
+        <p class="mb-6">{{todolist.description}}</p>
     {% endif %}
         <a href="{% url 'task:add' project.id todolist.id %}" class="py-4 px-6 bg-emerald-600 hover:bg-emerald-700 text-white inline-block rounded me-2">Add Task</a>
         <a href="{% url 'todolist:edit' project.id todolist.id %}" class="py-4 px-8 bg-amber-600 hover:bg-amber-700 text-white inline-block rounded me-2">Edit</a>
