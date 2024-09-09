@@ -28,4 +28,19 @@
     </div>
 
 {% endblock %}
-        
+
+
+<!-- <form method="POST">
+    {% csrf_token %}
+    <label for="name">Project Name:</label>
+    <input type="text" name="name" required>
+    <label for="description">Description:</label>
+    <textarea name="description" required></textarea>
+    <label for="members">Assign Team Members:</label>
+    <select name="members" multiple required>
+        {% for member in team_members %}
+            <option value="{{ member.id }}">{{ member.username }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Add Project</button>
+</form> -->
