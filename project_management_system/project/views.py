@@ -1,6 +1,9 @@
-from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Project, ProjectNote
+from .models import Project, ProjectNote, ProjectFile
+from account.models import User
+from task.models import Task
 from .forms import ProjectFileForm # type: ignore
 
 # Create your views here.
@@ -12,27 +15,72 @@ def projects(request):
         'projects': projects
     })
 
+# HoD - Access to all projects
+@login_required
+def project_list(request):
+    if request.user.is_hod:
+        projects = Project.objects.all()
+    elif request.user.is_manager:
+        projects = Project.objects.filter(team=request.user.team)
+    else:
+        projects = Project.objects.filter(members=request.user)
+    return render(request, 'project_list.html', {'projects': projects})
+
+# @login_required
+# def add_project(request):
+#     if request.method == 'POST':
+#         name = request.POST.get('name','')
+#         description = request.POST.get('description','')
+#         assigned_team = request.POST.get('assigned_team','')
+
+#         if name:
+#             Project.objects.create(name=name, description=description, assigned_team=assigned_team, created_by=request.user)
+
+#             return redirect('/projects/')
+#         else:
+#             print("Not Valid")
+
+#     return render(request, 'project/add.html')
+
+
+
+# Manager - Can add project to their team
 @login_required
 def add_project(request):
-    if request.method == 'POST':
-        name = request.POST.get('name','')
-        description = request.POST.get('description','')
+    if not request.user.is_manager:
+        return HttpResponseForbidden("You do not have permission to add projects.")
 
-        if name:
-            Project.objects.create(name=name, description=description, created_by=request.user)
+    if request.method == "POST":
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        members = request.POST.getlist('members')
+        
+        project = Project.objects.create(name=name, description=description, team=request.user.team, manager=request.user)
+        project.members.set(User.objects.filter(id__in=members))
+        project.save()
 
-            return redirect('/projects/')
-        else:
-            print("Not Valid")
+        return redirect('/projects/')
 
-    return render(request, 'project/add.html')
+    team_members = User.objects.filter(team=request.user.team)
+    return render(request, 'add_project.html', {'team_members': team_members})
 
+# @login_required
+# def project(request, pk):
+#     project = Project.objects.filter(created_by = request.user).get(pk=pk)
+#     return render(request, 'project/project.html', {
+#         'project': project
+#     })
+
+# Regular User - Access to their assigned projects
 @login_required
 def project(request, pk):
-    project = Project.objects.filter(created_by = request.user).get(pk=pk)
-    return render(request, 'project/project.html', {
-        'project': project
-    })
+    project = get_object_or_404(Project, pk=pk)
+    if request.user.is_hod or project.manager == request.user or project.members.filter(id=request.user.id).exists():
+        tasks = Task.objects.filter(project=project)
+        files = ProjectFile.objects.filter(project=project)
+        return render(request, 'project/project.html', {'project': project, 'tasks': tasks, 'files': files})
+    else:
+        return HttpResponseForbidden("You do not have access to this project.")
 
 @login_required
 def edit_project(request, pk):
@@ -40,10 +88,12 @@ def edit_project(request, pk):
     if request.method == 'POST':
         name = request.POST.get('name','')
         description = request.POST.get('description','')
+        # assigned_team = request.POST.get('assigned_team','')
 
         if name:
             project.name = name
             project.description = description
+            # project.assigned_team = assigned_team
             project.save()
 
             return redirect('/projects/')

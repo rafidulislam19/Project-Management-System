@@ -3,9 +3,12 @@
 {% block content %}
 
     <div class="py-6 px-8">
-        <h1 class="my-6 text-3xl font-semibold">
+        <h1 class="my-6 text-3xl font-bold">
             {{project.name}}
         </h1>
+        <!-- <h4 class="mb-3 text-lg font-semibold">
+            Assigned Team: {{project.assigned_team}}
+        </h4> -->
         <p class="mb-6">{{project.description}}</p>
         <a href="{% url 'todolist:add' project.id %}" class="py-4 px-6 bg-emerald-600 hover:bg-emerald-700 text-white inline-block rounded me-2">Add todo list</a>
 

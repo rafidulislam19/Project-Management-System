@@ -24,11 +24,15 @@ def signup(request):
     if request.method == 'POST':
         name = request.POST.get('name', '')
         email = request.POST.get('email', '')
+        pin = request.POST.get('pin', '')
+        team = request.POST.get('team', '')
+        is_manager = request.POST.get('is_manager', '')
+        department = request.POST.get('department', '')
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
 
         if name and email and password1 and password2:
-            user = User.objects.create_user(name, email, password1)
+            user = User.objects.create_user(name, email,  pin, team, is_manager, department, password1)
 
             print('User created:', user)
 

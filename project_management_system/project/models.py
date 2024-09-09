@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from account.models import User
+from account.models import User, Team
 
 # Create your models here.
 
@@ -9,9 +9,13 @@ class Project(models.Model):
      name = models.CharField(max_length=255)
      description = models.TextField(blank=True, null=True)
      created_by = models.ForeignKey(User, related_name='projects', on_delete=models.CASCADE)
+     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_projects')
+     members = models.ManyToManyField(User, related_name='projects')
 
      def __str__(self):
           return self.name
+
 
 class ProjectFile(models.Model):
      id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
