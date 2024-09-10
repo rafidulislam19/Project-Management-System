@@ -5,6 +5,8 @@ from .models import Project, ProjectNote, ProjectFile
 from account.models import User
 from task.models import Task
 from .forms import ProjectFileForm # type: ignore
+from .models import Team
+from django.contrib import messages
 
 # Create your views here.
 
@@ -17,14 +19,14 @@ def projects(request):
 
 # HoD - Access to all projects
 @login_required
-def project_list(request):
+def projects(request):
     if request.user.is_hod:
         projects = Project.objects.all()
     elif request.user.is_manager:
         projects = Project.objects.filter(team=request.user.team)
     else:
         projects = Project.objects.filter(members=request.user)
-    return render(request, 'project_list.html', {'projects': projects})
+    return render(request, 'projects.html', {'projects': projects})
 
 # @login_required
 # def add_project(request):
@@ -45,24 +47,131 @@ def project_list(request):
 
 
 # Manager - Can add project to their team
+# @login_required
+# def add_project(request):
+#     if not request.user.is_manager:
+#         return HttpResponseForbidden("You do not have permission to add projects.")
+
+#     if request.method == "POST":
+#         name = request.POST.get('name')
+#         description = request.POST.get('description')
+#         members = request.POST.getlist('members')
+        
+#         project = Project.objects.create(name=name, description=description, team=request.user.team, manager=request.user)
+#         project.members.set(User.objects.filter(id__in=members))
+#         project.save()
+
+#         return redirect('/projects/')
+
+#     team_members = User.objects.filter(team=request.user.team)
+#     return render(request, 'add.html', {'team_members': team_members})
+
+# Manager - Can add project to their team
 @login_required
 def add_project(request):
+    # Check if the user is a manager
     if not request.user.is_manager:
-        return HttpResponseForbidden("You do not have permission to add projects.")
+        messages.error(request, "You do not have permission to add a project.")
+        return redirect('/index/')
 
-    if request.method == "POST":
+    teams = Team.objects.filter(members=request.user)
+
+    if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
-        members = request.POST.getlist('members')
-        
-        project = Project.objects.create(name=name, description=description, team=request.user.team, manager=request.user)
-        project.members.set(User.objects.filter(id__in=members))
-        project.save()
+        team_id = request.POST.get('team')
 
-        return redirect('/projects/')
+        if name and team_id:
+            team = Team.objects.get(id=team_id)
 
-    team_members = User.objects.filter(team=request.user.team)
-    return render(request, 'add_project.html', {'team_members': team_members})
+            # Ensure the manager is assigning to their own team
+            if request.user in team.members.all():
+                project = Project.objects.create(
+                    name=name,
+                    description=description,
+                    team=team,
+                    created_by=request.user
+                )
+                messages.success(request, "Project added successfully!")
+                return redirect('/projects/', project_id=project.id)
+            else:
+                messages.error(request, "You can only assign projects to your own team.")
+        else:
+            messages.error(request, "Please fill in all required fields.")
+
+    context = {
+        'teams': teams,
+    }
+
+    return render(request, 'add.html', context)
+
+# @login_required
+# def edit_project(request, pk):
+#     if not request.user.is_manager:
+#         return HttpResponseForbidden("You do not have permission to add projects.")
+    
+#     project = Project.objects.filter(created_by = request.user).get(pk=pk)
+#     if request.method == 'POST':
+#         name = request.POST.get('name')
+#         description = request.POST.get('description')
+#         team_id = request.POST.get('team')
+
+#         if name and team_id:
+#             team = Team.objects.get(id=team_id)
+
+#             project.name = name
+#             project.description = description
+#             project.team = team
+            
+#             project.save()
+
+#             return redirect('/projects/')
+#         else:
+#             print("Not Valid")
+
+#     return render(request, 'project/edit.html', {
+#         'project': project
+#     })
+
+@login_required
+def edit_project(request, project_id):
+    # Retrieve the project or return a 404 if not found
+    project = get_object_or_404(Project, id=project_id)
+
+    if not request.user.is_manager or request.user not in project.team.members.all():
+        messages.error(request, "You do not have permission to edit this project.")
+        return redirect('/projects/') 
+
+    # Get the teams that the user manages
+    teams = Team.objects.filter(members=request.user)
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        team_id = request.POST.get('team')
+
+        if name and team_id:
+            team = Team.objects.get(id=team_id)
+
+            if request.user in team.members.all():
+                project.name = name
+                project.description = description
+                project.team = team
+                project.save()
+                messages.success(request, "Project updated successfully!")
+                return redirect('/project/', project_id=project.id)
+            else:
+                messages.error(request, "You can only assign projects to your own team.")
+        else:
+            messages.error(request, "Please fill in all required fields.")
+
+    context = {
+        'project': project,
+        'teams': teams,
+    }
+
+    return render(request, 'edit.html', context)
+
 
 # @login_required
 # def project(request, pk):
@@ -82,27 +191,6 @@ def project(request, pk):
     else:
         return HttpResponseForbidden("You do not have access to this project.")
 
-@login_required
-def edit_project(request, pk):
-    project = Project.objects.filter(created_by = request.user).get(pk=pk)
-    if request.method == 'POST':
-        name = request.POST.get('name','')
-        description = request.POST.get('description','')
-        # assigned_team = request.POST.get('assigned_team','')
-
-        if name:
-            project.name = name
-            project.description = description
-            # project.assigned_team = assigned_team
-            project.save()
-
-            return redirect('/projects/')
-        else:
-            print("Not Valid")
-
-    return render(request, 'project/edit.html', {
-        'project': project
-    })
 
 @login_required
 def delete(request, pk):

@@ -11,7 +11,7 @@ class Project(models.Model):
      created_by = models.ForeignKey(User, related_name='projects', on_delete=models.CASCADE)
      team = models.ForeignKey(Team, on_delete=models.CASCADE)
      manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_projects')
-     members = models.ManyToManyField(User, related_name='projects')
+     members = models.ManyToManyField(User, related_name='members')
 
      def __str__(self):
           return self.name

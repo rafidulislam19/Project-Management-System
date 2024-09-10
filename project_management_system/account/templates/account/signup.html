@@ -1,53 +1,71 @@
+
+
 {% extends 'core/base.html' %}
 
 {% block content %}
 
 <div class="py-6 px-8">
-
     <div class="max-w-xl mx-auto py-8 bg-slate-800 text-center">
         <h1 class="text-3xl text-white font-semibold">Sign up</h1>
+
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="bg-red-500 text-white p-2 my-2 rounded">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <form class="mt-6 px-8 space-y-4" method="post" action=".">
             {% csrf_token %}
             <div>
                 <label class="text-white">Name</label><br>
-                <input type="text" class="w-full py-4 px-6 bg-slate-500 text-white rounded" name="name">
+                <input type="text" class="w-full py-4 px-6 bg-slate-500 text-white rounded" name="name" required>
             </div>
             <div>
                 <label class="text-white">E-mail</label><br>
-                <input type="email" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="email">
+                <input type="email" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="email" required>
             </div>
             <div>
                 <label class="text-white">Pin Number</label><br>
-                <input type="number" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="pin">
+                <input type="number" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="pin" required>
             </div>
             <div>
                 <label class="text-white">Team</label><br>
-                <input type="text" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="team">
+                <select name="team" class="w-full py-4 px-6 text-white bg-slate-500 rounded">
+                    <option value="">Select Team</option>
+                    {% for team in teams %}
+                        <option value="{{ team.id }}">{{ team.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div>
                 <label class="text-white">Manager?</label><br>
-                <input type="text" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="is_manager">
+                <select name="is_manager" class="w-full py-4 px-6 text-white bg-slate-500 rounded">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
             </div>
             <div>
                 <label class="text-white">Department</label><br>
-                <input type="text" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="department">
+                <input type="text" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="department" required>
             </div>
-
             <div>
                 <label class="text-white">Password</label><br>
-                <input type="password" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="password1">
+                <input type="password" class="w-full py-4 px-6 text-white bg-slate-500 rounded" name="password1" required>
             </div>
-
             <div>
                 <label class="text-white">Repeat password</label><br>
-                <input type="password" class="w-full py-4 px-6 bg-slate-500 text-white rounded" name="password2">
+                <input type="password" class="w-full py-4 px-6 bg-slate-500 text-white rounded" name="password2" required>
             </div>
 
             <div>
                 <button class="py-4 px-8 bg-sky-600 hover:bg-sky-700 text-white rounded">Sign up</button>
             </div>
         </form>
+        <div class="mt-4">
+            <a href="/login/" class="text-sky-400 hover:text-sky-500">Already have an account? Login here.</a>
+        </div>
     </div>
 </div>
 
